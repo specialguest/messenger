@@ -78,7 +78,16 @@ migrate_db:
 messenger_consume:
 	$(PHP) bin/console messenger:consume -vv
 
+messenger_debug_configuration:
+	$(PHP) bin/console debug:config framework messenger
+
 #### [ Tests Suite ✅ ]
+
+rector_init:
+	docker run --rm -v $(ROOT_DIR):/project rector/rector:latest init
+
+rector_dry:
+	docker run --rm -v $(ROOT_DIR):/project rector/rector:latest process src --dry-run
 
 rector:
 	docker run --rm -v $(ROOT_DIR):/project rector/rector:latest process src

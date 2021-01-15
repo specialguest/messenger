@@ -1,13 +1,27 @@
 framework:
     messenger:
+        buses:
+            messeneger.bus.default:
+                middleware:
+                    - App\Messenger\AuditMiddleware
+
         # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
-        # failure_transport: failed
+        failure_transport: failed
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
+            failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: null
+                options: {  }
+                retry_strategy:
+                    service: null  # Implement RetryServiceInterface to customize ;)
+                    max_retries: 5
+                    delay: 1000
+                    multiplier: 3
+                    max_delay: 0
 
         routing:
             # Route your messages to the transports

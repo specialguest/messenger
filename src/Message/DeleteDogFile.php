@@ -2,13 +2,10 @@
 
 namespace App\Message;
 
-class DeleteDogFile
+class DeleteDogFile implements \Stringable
 {
-    private string $filename;
-
-    public function __construct(string $filename)
+    public function __construct(private string $filename)
     {
-        $this->filename = $filename;
     }
 
     public function getFilename(): string
@@ -16,7 +13,7 @@ class DeleteDogFile
         return $this->filename;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->filename;
     }

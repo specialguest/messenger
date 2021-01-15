@@ -4,11 +4,8 @@ namespace App\Message;
 
 class AddDog
 {
-    private int $dogId;
-
-    public function __construct(int $dogId)
+    public function __construct(private int $dogId)
     {
-        $this->dogId = $dogId;
     }
 
     public function getDogId(): int

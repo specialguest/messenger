@@ -18,7 +18,6 @@ class DogDeleteController extends AbstractController
      *
      * Delete a dog.
      *
-     * @Route("/api/dogs/{dogId}", methods={"DELETE"})
      * @ParamConverter("dog", options={"mapping": {"dogId"   : "id"}})
      * @OA\Delete(
      *     path="api/dogs/{dogId}",
@@ -49,10 +48,10 @@ class DogDeleteController extends AbstractController
      *     )
      * )
      */
+    #[\Symfony\Component\Routing\Annotation\Route(path: '/api/dogs/{dogId}', methods: ['DELETE'])]
     public function delete(Dog $dog, MessageBusInterface $messageBus): JsonResponse
     {
         $messageBus->dispatch( new RemoveDog($dog->getId()));
-
         return $this->json(null, 204);
     }
 }

@@ -13,22 +13,15 @@ class RemoveDogHandler implements MessageHandlerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private EntityManagerInterface $entityManager;
-    private DogRepository $dogRepository;
-    private MessageBusInterface $messageBus;
-
-    public function __construct(EntityManagerInterface $entityManager, DogRepository $dogRepository, MessageBusInterface $messageBus)
+    public function __construct(private EntityManagerInterface $entityManager, private DogRepository $dogRepository, private MessageBusInterface $messageBus)
     {
-        $this->entityManager = $entityManager;
-        $this->dogRepository = $dogRepository;
-        $this->messageBus = $messageBus;
     }
 
     public function __invoke(RemoveDog $removeDog)
     {
         $dog = $this->dogRepository->find($removeDog->getDogId());
 
-        if (!$dog) {
+        if ($dog === null) {
 
             if ($this->logger) {
                 $this->logger->alert(sprintf('Dog %d was missing', $removeDog->getDogId()));

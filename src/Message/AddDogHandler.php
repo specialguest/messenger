@@ -7,11 +7,8 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class AddDogHandler implements MessageHandlerInterface
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function __invoke(AddDog $addDog)

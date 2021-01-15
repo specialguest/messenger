@@ -21,7 +21,6 @@ class DogPostController extends AbstractController
     /**
      * Add a new dog.
      *
-     * @Route("/api/dogs", methods={"POST"})
      * @OA\Post(
      *     path="/api/dogs",
      *     tags={"dogs"},
@@ -62,32 +61,26 @@ class DogPostController extends AbstractController
      *     )
      * )
      */
+    #[\Symfony\Component\Routing\Annotation\Route(path: '/api/dogs', methods: ['POST'])]
     public function create(Request $request, ValidatorInterface $validator, MessageBusInterface $messageBus, EntityManagerInterface  $entityManager): JsonResponse
     {
         $data = $request->request->all();
-
         $dog = new Dog();
-
         if (array_key_exists('name', $data)) {
             $dog->setName($data['name']);
         }
         if (array_key_exists('filename', $data)) {
             $dog->setFilename($data['filename']);
         }
-
         $errors = $validator->validate($dog);
-
         if (count($errors) > 0) {
             return $this->json('Error', 400);
         }
-
         $entityManager->persist($dog);
         $entityManager->flush();
-
         $message = new AddDog($dog->getId());
         $envelope = new Envelope($message, [new DelayStamp(3000)]);
         $messageBus->dispatch($envelope);
-
         return $this->json('Dog added!', 201);
     }
 }
