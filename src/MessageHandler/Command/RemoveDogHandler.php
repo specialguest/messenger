@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Message;
+namespace App\MessageHandler\Command;
 
+use App\Message\Command\DeleteDogFile;
+use App\Message\Command\RemoveDog;
+use App\Message\Event\DeleteDogFileEvent;
 use App\Repository\DogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -13,7 +16,7 @@ class RemoveDogHandler implements MessageHandlerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    public function __construct(private EntityManagerInterface $entityManager, private DogRepository $dogRepository, private MessageBusInterface $messageBus)
+    public function __construct(private EntityManagerInterface $entityManager, private DogRepository $dogRepository, private MessageBusInterface $messageBus, private MessageBusInterface $eventBus)
     {
     }
 
@@ -33,6 +36,10 @@ class RemoveDogHandler implements MessageHandlerInterface, LoggerAwareInterface
         $this->entityManager->remove($dog);
         $this->entityManager->flush();
 
+        // Appeler une seconde commande
         $this->messageBus->dispatch(new DeleteDogFile($dog->getFilename()));
+
+        // Appeler un event
+        $this->messageBus->dispatch(new DeleteDogFileEvent($dog->getFilename()));
     }
 }

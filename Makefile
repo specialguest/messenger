@@ -61,6 +61,7 @@ install: composer_check_requirements ## install composer dependencies
 	$(PHP) bin/console doctrine:schema:update --force
 	$(PHP) bin/console messenger:setup-transports
 
+
 fix_permissions:
 	sudo chmod -R 777 var/cache var/log
 
@@ -69,6 +70,10 @@ deploy: composer_check_requirements composer_clear_cache ## deploy application
 	$(COMPOSER) install --no-interaction --prefer-dist
 	$(COMPOSER) dump-autoload --optimize
 	$(PHP) bin/console doctrine:schema:update --force
+	$(PHP) bin/console messenger:setup-transports
+	# Messenger - restart workers
+	$(PHP) bin/console messenger:stop-workers
+
 
 #### [ Database 💽 ]
 migrate_db:
@@ -84,13 +89,14 @@ messenger_debug_configuration:
 #### [ Tests Suite ✅ ]
 
 rector_init:
-	docker run --rm -v $(ROOT_DIR):/project rector/rector:latest init
+	(PHP) vendor/bin/rector process src init
 
 rector_dry:
-	docker run --rm -v $(ROOT_DIR):/project rector/rector:latest process src --dry-run
+	(PHP) vendor/bin/rector process src --dry-run
 
 rector:
-	docker run --rm -v $(ROOT_DIR):/project rector/rector:latest process src
+#docker run --rm -v $(ROOT_DIR):/project rector/rector:latest process src
+	$(PHP) vendor/bin/rector process src
 
 phpunit:
 	$(PHP) bin/phpunit
@@ -110,7 +116,7 @@ ci:
 	# Check Code style
 	#$(PHP) ./vendor/bin/phpcs
 	# Unit and functional testing
-	#$(PHP) bin/phpunit
+	$(PHP) bin/phpunit
 	# Static analyse - require phpunit to be installed (autoload.php)
 	#$(PHP) ./vendor/bin/phpstan analyse -c phpstan.neon --no-progress
 	#$(PHP) ./vendor/bin/psalm

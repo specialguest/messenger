@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Message;
+namespace App\MessageHandler\Command;
 
+use App\Message\Command\DeleteDogFile;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;

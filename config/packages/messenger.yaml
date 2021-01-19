@@ -1,7 +1,18 @@
 framework:
     messenger:
+        default_bus: command.bus
+
         buses:
-            messeneger.bus.default:
+            command.bus:
+                middleware:
+                    - App\Messenger\AuditMiddleware
+                    # - validation # but it's better to validate data before sending them to the bus...
+                    # - doctrine_transaction # Wrap the handler inside a Doctrine transaction
+
+            query.bus: ~
+
+            event.bus:
+                default_middleware: allow_no_handlers # An event have 0+ handler(s)
                 middleware:
                     - App\Messenger\AuditMiddleware
 
@@ -10,12 +21,17 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
-                serializer: null
-                options: {  }
+                serializer: null # messenger.transport.symfony_serializer
+                options:
+                    exchange: # for RabbitMQ
+                        name: messages
+                        type: direct #instead of fanout
+                        default_publish_routing_key: normal
+                    queues:
+                        messages_normal:
+                            binding_keys: [normal]
                 retry_strategy:
                     service: null  # Implement RetryServiceInterface to customize ;)
                     max_retries: 5
@@ -23,7 +39,25 @@ framework:
                     multiplier: 3
                     max_delay: 0
 
+            async_priority_high:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: high
+                    exchange:  # for RabbitMQ
+                        name: messages_high_priority
+                        type: direct
+                        default_publish_routing_key: high
+                    queues:
+                        messages_high:
+                            binding_keys: [high]
+
+            failed: 'doctrine://default?queue_name=failed'
+            # sync: 'sync://'
+
         routing:
             # Route your messages to the transports
-            'App\Message\RemoveDog': async
-            'App\Message\DeleteDogFile': async
+            'App\Message\Command\AddDog': async_priority_high
+            'App\Message\Command\RemoveDog': async_priority_high
+            'App\Message\Command\DeleteDogFile': async
+            'App\Message\Event\DeleteDogFileEvent': async
+

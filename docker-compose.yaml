@@ -7,9 +7,7 @@ services:
         container_name: ${APP_NAME}-db
         restart: unless-stopped
         ports:
-            - 3306:3306
-        env_file:
-            - .env
+            - "3306:3306"
         environment:
             - MYSQL_DATABASE=${DATABASE_NAME}
             - MYSQL_USER=${DATABASE_USER}
@@ -31,13 +29,14 @@ services:
             COMPOSER_MEMORY_LIMIT: -1
         depends_on:
             - database
+            - rabbitmq
         volumes:
             - ./:/var/www
-            - ./:/var/www/var:delegated # Fix mutagen permission error on var
             - ./docker-compose/php-fpm/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
             - ./docker-compose/php-fpm/zz-blackfire.ini:/usr/local/etc/php/conf.d/zz-blackfire.ini:ro
             - ./docker-compose/php-fpm/supervisor/conf.d:/etc/supervisor/conf.d:ro
             - ./docker-compose/php-fpm/supervisor/supervisor.conf:/etc/supervisor/supervisor.conf:ro
+            - ./docker-compose/logs/supervisor:/var/log/supervisor
         networks:
             - backend
 
@@ -45,10 +44,8 @@ services:
         image: nginx:1.19-alpine
         container_name: ${APP_NAME}-web
         restart: unless-stopped
-        expose:
-            - 80
         ports:
-            - 80:80
+            - "80:80"
         volumes:
             - ./:/var/www:delegated
             - ./docker-compose/logs/nginx:/var/log/nginx
@@ -63,8 +60,35 @@ services:
         working_dir: /var/www
         command: [nginx-debug, '-g', 'daemon off;']
 
+    # https://github.com/GoogleCloudPlatform/rabbitmq-docker/blob/master/3/README.md
+    rabbitmq:
+        image: rabbitmq:3.8.9-management-alpine
+        container_name: ${APP_NAME}-rabbitmq
+        environment:
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+        volumes:
+            - ./docker-compose/rabbitmq/etc/:/etc/rabbitmq/
+            - ./docker-compose/logs/:/var/log/rabbitmq/
+            - data-rabbit:/var/lib/rabbitmq/
+        # https://www.rabbitmq.com/networking.html#ports
+        expose:
+            - 5672 # used by AMQP 0-9-1 and 1.0 clients without and with TLS
+        ports:
+            - "5672:5672"
+            - "15672:15672" # HTTP API clients, management UI and rabbitmqadmin (only if the management plugin is enabled)
+        healthcheck:
+            test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+            interval: 10s
+            timeout: 10s
+            retries: 5
+        networks:
+            - backend
+
 volumes:
     data-messenger:
+        driver: local
+    data-rabbit:
         driver: local
 networks:
     backend:

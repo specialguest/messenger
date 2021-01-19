@@ -3,13 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Dog;
-use App\Message\RemoveDog;
+use App\Message\Command\RemoveDog;
 use OpenApi\Annotations as OA;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Routing\Annotation\Route;
 
 //https://github.com/zircote/swagger-php/blob/master/Examples/petstore-3.0/controllers/Pet.php
 class DogDeleteController extends AbstractController
