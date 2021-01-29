@@ -14,6 +14,9 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 build: ### build/rebuild images
 	$(BUILDKIT) $(DOCKER_COMPOSE) build
 
+build_no_cache: ### build/rebuild images
+	$(BUILDKIT) $(DOCKER_COMPOSE) build --no-cache
+
 up: ## Start the docker hub
 	$(BUILDKIT) $(DOCKER_COMPOSE) up -d
 

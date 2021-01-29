@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
         libonig-dev \
         graphviz \
         supervisor \
+        gnupg2 \
+        # AMQP
         librabbitmq-dev \
     && docker-php-ext-configure gd \
     && docker-php-ext-configure intl \
